@@ -8,7 +8,7 @@
 
 let currentStage = 1;
 const CORRECT_ORDER = [13, 14, 16]; // Photo 13 is first, Photo 14 is second, Photo 16 is third
-const SPOTIFY_PLAYLIST = "https://open.spotify.com/playlist/YOUR_PLAYLIST_ID"; // Update this!
+const SPOTIFY_PLAYLIST = "https://open.spotify.com/playlist/5ZgqlgCvUXYFbsgUpEs50I?si=8c0a952037644d30"; // Update this!
 
 // Photo configuration
 const GALLERY_PHOTO_COUNT = 15; // photo1-15 for random selection
