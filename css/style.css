@@ -93,6 +93,23 @@ body {
     transform: translateY(0);
 }
 
+.puzzle-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.secondary-button {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    border: 2px solid rgba(255, 105, 180, 0.5);
+}
+
+.secondary-button:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+    border-color: rgba(255, 105, 180, 0.8);
+}
+
 /* ==========================================
    GAME TRANSITION POPUP
    ========================================== */

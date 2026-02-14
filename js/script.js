@@ -638,6 +638,7 @@ let puzzlePieces;
 let puzzleSlots;
 let selectedPiece = null; // Currently selected piece
 let puzzlePlacements = {}; // Track which piece is in which slot
+let initialPuzzlePositions = {}; // Store original positions for reset
 
 function initStage3() {
     createPuzzleGrid();
@@ -658,6 +659,9 @@ function initStage3() {
 
     // Check puzzle button
     document.getElementById('check-puzzle-btn').addEventListener('click', checkPuzzle);
+
+    // Reset puzzle button
+    document.getElementById('reset-puzzle-btn').addEventListener('click', resetPuzzle);
 }
 
 function createPuzzleGrid() {
@@ -744,6 +748,12 @@ function randomizePuzzlePieces() {
     // Spin in animation
     pieces.forEach((piece, index) => {
         const pos = positions[index];
+
+        // Store initial position for reset
+        initialPuzzlePositions[index] = {
+            left: pos.left,
+            top: pos.top
+        };
 
         console.log(`Piece ${index + 1} position:`, pos);
 
@@ -840,6 +850,53 @@ function placeInSlot(e) {
 
     // Deselect
     selectedPiece = null;
+
+    // Show Check button if all slots filled
+    updateCheckButtonVisibility();
+}
+
+function updateCheckButtonVisibility() {
+    const checkBtn = document.getElementById('check-puzzle-btn');
+    const pieceCount = PUZZLE_COLS * PUZZLE_ROWS;
+
+    if (Object.keys(puzzlePlacements).length === pieceCount) {
+        checkBtn.style.display = 'inline-block';
+    } else {
+        checkBtn.style.display = 'none';
+    }
+}
+
+function resetPuzzle() {
+    const pieces = document.querySelectorAll('.puzzle-piece');
+
+    // Clear all slots
+    puzzleSlots.forEach(slot => {
+        slot.classList.remove('filled');
+    });
+
+    // Return pieces to original positions
+    pieces.forEach((piece, index) => {
+        piece.classList.remove('in-slot', 'selected');
+
+        const originalPos = initialPuzzlePositions[index];
+        if (originalPos) {
+            piece.style.transition = 'all 0.5s ease-out';
+            piece.style.left = `${originalPos.left}px`;
+            piece.style.top = `${originalPos.top}px`;
+            piece.style.width = '240px';
+            piece.style.height = '135px';
+            piece.style.backgroundSize = '720px 405px';
+        }
+    });
+
+    // Clear placements
+    puzzlePlacements = {};
+
+    // Clear selection
+    selectedPiece = null;
+
+    // Hide Check button
+    updateCheckButtonVisibility();
 }
 
 function checkPuzzle() {
