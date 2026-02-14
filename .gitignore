@@ -1,0 +1,23 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Optional: Ignore actual photos (if you don't want to commit them)
+# Uncomment the line below if you want to keep photos private
+# images/photos/*.jpg
+# images/photos/*.png
+
+# Optional: Ignore audio file (if file is large or copyrighted)
+# Uncomment if needed
+# audio/*.mp3

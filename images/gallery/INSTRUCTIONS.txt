@@ -1,0 +1,64 @@
+PHOTO INSTRUCTIONS
+==================
+
+This folder should contain your personal photos for the Valentine's Day gallery.
+
+ADDING YOUR PHOTOS:
+-------------------
+
+1. Place your photos in this folder (images/gallery/)
+
+2. Rename them to something simple:
+   - photo1.jpg
+   - photo2.jpg
+   - photo3.jpg
+   - etc.
+
+3. IMPORTANT: Optimize your images first!
+   - Resize to max 1920px width
+   - Compress to 80-90% quality
+   - Use online tool: https://tinypng.com/
+   - This keeps file sizes small for fast loading
+
+4. Update the HTML file:
+   - Open index.html
+   - Find the gallery section
+   - Update the image paths and alt text (descriptions)
+   - Example:
+     <a href="images/gallery/photo1.jpg" data-lg-size="1920-1280">
+         <img src="images/gallery/photo1.jpg"
+              alt="Our first date at the park"
+              loading="lazy"
+              class="gallery-image">
+     </a>
+
+5. The alt text becomes the caption in the lightbox viewer
+
+
+RECOMMENDED IMAGE SPECS:
+------------------------
+
+Format: JPEG (.jpg) or PNG (.png)
+Width: 1920px maximum (can be smaller)
+File size: Under 2MB per image (ideally 500KB-1MB)
+Aspect ratio: Any (landscape photos work best in gallery grid)
+
+
+CURRENT PLACEHOLDER IMAGES:
+---------------------------
+
+The HTML currently references:
+- photo1.jpg through photo6.jpg
+
+You can add more or fewer images - just add/remove the corresponding
+<a> and <img> tags in index.html
+
+
+TIPS:
+-----
+
+✓ Use meaningful descriptions in alt text (these show as captions)
+✓ Arrange photos in chronological order for a story
+✓ Mix wide and tall photos for visual variety
+✓ Test on mobile after adding - images should load quickly
+✓ Keep total gallery size under 50MB for best performance
