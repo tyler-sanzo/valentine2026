@@ -93,14 +93,14 @@ animate();
 // ==========================================
 
 const textSequence = [
-    "Happy Valentine's Day",
-    "I wanted to show you something special...",
-    "These are some of my favorite moments with you",
-    "Every photo tells a story",
-    "Every moment is a treasure",
-    "Each memory makes me smile",
-    "Here's to many more memories together",
-    "I love you ❤️"
+    "Hola mi amor, feliz día de San Valentín! 💖",
+    "Te quiero mucho, tanto... ",
+    "Quería prepararte algo especial...",
+    "No tengo mucha experiencia con esto,,,",
+    "Así que considéralo una primera prueba... 😅",
+    "Pero espero que lo disfrutes.",
+    "Tú y yo para siempre",
+    "🦝❤️"
 ];
 
 let currentStep = 0;
@@ -577,7 +577,7 @@ function checkTimelineOrder() {
     }
 
     if (isCorrect) {
-        showMessage('Perfect! You got the timeline right! ❤️', 'success');
+        showMessage('Perfecto! ❤️', 'success');
         setTimeout(() => {
             // Remove success message before transitioning
             const successMsg = document.querySelector('.game-message');
@@ -585,7 +585,7 @@ function checkTimelineOrder() {
             goToStage3();
         }, 2000);
     } else {
-        showMessage('Not quite right... try again! 💕', 'error');
+        showMessage('Try again...', 'error');
         setTimeout(() => {
             resetTimelinePhotos();
         }, 1500);

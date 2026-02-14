@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page - Placeholder Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .info-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 { color: #c9184a; }
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        ol {
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-box">
+        <h1>🎨 Valentine's Day Gallery - Test Page</h1>
+
+        <div class="alert">
+            <strong>⚠️ Important:</strong> The main site (<code>index.html</code>) currently references placeholder images that don't exist yet. This will cause broken image icons until you add your photos.
+        </div>
+
+        <h2>Next Steps to Test the Site:</h2>
+
+        <ol>
+            <li><strong>Add placeholder images</strong> (temporary testing)
+                <br>Place any 6 JPEG images in <code>images/gallery/</code> named:
+                <ul>
+                    <li>photo1.jpg</li>
+                    <li>photo2.jpg</li>
+                    <li>photo3.jpg</li>
+                    <li>photo4.jpg</li>
+                    <li>photo5.jpg</li>
+                    <li>photo6.jpg</li>
+                </ul>
+                You can use any test images for now - just to verify the gallery works.
+            </li>
+
+            <li><strong>Add background music</strong> (optional)
+                <br>Place an MP3 file in <code>audio/</code> folder named <code>background.mp3</code>
+                <br><em>Note: Audio will only work when you click the play button (browsers block autoplay)</em>
+            </li>
+
+            <li><strong>Open index.html in your browser</strong>
+                <br>Right-click <code>index.html</code> → Open with → Chrome/Firefox
+            </li>
+
+            <li><strong>Test the features:</strong>
+                <ul>
+                    <li>✓ Click any photo to open the lightbox gallery</li>
+                    <li>✓ Navigate with arrow keys or swipe (on mobile)</li>
+                    <li>✓ Test the audio player</li>
+                    <li>✓ Check Spotify embed loads (requires internet)</li>
+                    <li>✓ Test on mobile device or browser mobile emulator</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h2>Creating Quick Test Images:</h2>
+
+        <p>Don't have photos ready yet? Here are quick ways to get test images:</p>
+
+        <ul>
+            <li><strong>Use placeholder service:</strong> Download from <a href="https://picsum.photos/1920/1280" target="_blank">Lorem Picsum</a></li>
+            <li><strong>Use existing photos:</strong> Copy any 6 photos from your computer and rename them</li>
+            <li><strong>Screenshot method:</strong> Take 6 screenshots and save as JPEGs</li>
+        </ul>
+
+        <h2>Quick Command to Download Test Images:</h2>
+
+        <p>If you have <code>curl</code> installed, run this in your terminal:</p>
+
+        <pre><code>cd images/gallery
+curl -o photo1.jpg https://picsum.photos/1920/1280?random=1
+curl -o photo2.jpg https://picsum.photos/1920/1280?random=2
+curl -o photo3.jpg https://picsum.photos/1920/1280?random=3
+curl -o photo4.jpg https://picsum.photos/1920/1280?random=4
+curl -o photo5.jpg https://picsum.photos/1920/1280?random=5
+curl -o photo6.jpg https://picsum.photos/1920/1280?random=6</code></pre>
+
+        <div class="success">
+            <strong>✓ Once you add images:</strong> The site should work perfectly! All the code is ready - it just needs your photos and music.
+        </div>
+
+        <h2>Files Checklist:</h2>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tr style="background: #f8f9fa;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">File</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Status</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>index.html</code></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">✓ Created</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>css/style.css</code></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">✓ Created</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>js/script.js</code></td>
+                <td style="padding: 10px; border: 1px solid #ddd;">✓ Created</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>images/gallery/*.jpg</code></td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: orange;">⚠️ Add your photos</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd;"><code>audio/background.mp3</code></td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: gray;">○ Optional</td>
+            </tr>
+        </table>
+
+        <p style="margin-top: 30px; font-size: 14px; color: #666;">
+            📖 <strong>For full instructions:</strong> See <code>SETUP-GUIDE.md</code> or <code>README.md</code>
+        </p>
+    </div>
+</body>
+</html>

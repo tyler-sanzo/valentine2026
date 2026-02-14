@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Numbered Puzzle Test Image</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid #333;
+            display: block;
+            margin: 20px auto;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #ff4d7d;
+        }
+        .info {
+            text-align: center;
+            margin: 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Puzzle Test Image Generator</h1>
+    <p class="info">This will create a 600×600px image divided into 12 numbered squares (3 columns × 4 rows)</p>
+
+    <canvas id="puzzleCanvas" width="600" height="600"></canvas>
+
+    <button onclick="downloadImage()">Download puzzle-test.jpg</button>
+
+    <script>
+        const canvas = document.getElementById('puzzleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const cols = 3;
+        const rows = 4;
+        const pieceWidth = canvas.width / cols;
+        const pieceHeight = canvas.height / rows;
+
+        const colors = [
+            '#ffcce0', '#ffe0cc', '#fff5cc', '#e0ffcc',
+            '#ccffe0', '#ccf5ff', '#cce0ff', '#e0ccff',
+            '#ffccf5', '#ffcccc', '#f5ffcc', '#ccccff'
+        ];
+
+        let pieceNum = 1;
+
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const x = col * pieceWidth;
+                const y = row * pieceHeight;
+
+                // Draw colored square
+                ctx.fillStyle = colors[pieceNum - 1];
+                ctx.fillRect(x, y, pieceWidth, pieceHeight);
+
+                // Draw border
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, pieceWidth, pieceHeight);
+
+                // Draw number
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 60px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(pieceNum, x + pieceWidth / 2, y + pieceHeight / 2);
+
+                pieceNum++;
+            }
+        }
+
+        function downloadImage() {
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = 'puzzle-test.jpg';
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+                alert('Downloaded! Save it to images/photos/puzzle-test.jpg');
+            }, 'image/jpeg', 0.95);
+        }
+
+        console.log('Puzzle test image generated with 12 pieces (3×4 grid)');
+    </script>
+</body>
+</html>
