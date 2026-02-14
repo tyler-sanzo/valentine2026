@@ -154,8 +154,15 @@ function initStage1() {
     const textElement = document.getElementById('progressive-text');
     const hintElement = document.getElementById('tap-hint');
 
+    // Initialize with first message
+    textElement.textContent = textSequence[0];
+    textElement.style.opacity = 1;
+
     function nextStep() {
         if (currentStage !== 1 || isDragging) return;
+
+        // Move to next step
+        currentStep++;
 
         if (currentStep < textSequence.length) {
             textElement.style.opacity = 0;
@@ -169,14 +176,12 @@ function initStage1() {
                     photoIndex++;
                 }
 
-                currentStep++;
-
-                if (currentStep >= textSequence.length) {
+                if (currentStep >= textSequence.length - 1) {
                     // All photos shown, show game invitation
                     setTimeout(() => {
                         showGameInvitation();
                     }, 1500);
-                } else if (currentStep === textSequence.length - 1) {
+                } else if (currentStep === textSequence.length - 2) {
                     hintElement.textContent = "One more tap... ❤️";
                 }
             }, 500);
