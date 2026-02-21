@@ -31,10 +31,14 @@ const canvas = document.getElementById('background');
 const ctx = canvas.getContext('2d');
 const stars = [];
 const starCount = 500;
+let bgGradient = null;
 
 function initCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bgGradient.addColorStop(0, '#0a0a0a');
+    bgGradient.addColorStop(1, '#150d12');
     createStars();
 }
 
@@ -45,8 +49,8 @@ function createStars() {
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
             radius: Math.random() * 1.2,
-            hue: [0, 330, 340][Math.floor(Math.random() * 3)],
-            saturation: 50 + Math.random() * 50,
+            hue: [350, 10, 25][Math.floor(Math.random() * 3)],
+            saturation: 30 + Math.random() * 30,
             opacity: Math.random()
         });
     }
@@ -63,10 +67,7 @@ function drawStar(star) {
 }
 
 function animate() {
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#0a0a0a');
-    gradient.addColorStop(1, '#1a0a14');
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     stars.forEach((star, i) => {
@@ -82,6 +83,9 @@ function animate() {
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bgGradient.addColorStop(0, '#0a0a0a');
+    bgGradient.addColorStop(1, '#150d12');
     createStars();
 });
 
@@ -129,12 +133,13 @@ function initStage1() {
         availablePhotos.splice(randomIndex, 1); // Remove so we don't pick it again
     }
 
-    console.log('Selected random photos for gallery:', selectedPhotos);
-
-    // Apply random photos as backgrounds
+    // Apply random photos as backgrounds and preload
     photoLayers.forEach((layer, index) => {
         if (selectedPhotos[index]) {
-            layer.style.backgroundImage = `url('${getPhotoPath(selectedPhotos[index])}')`;
+            const path = getPhotoPath(selectedPhotos[index]);
+            layer.style.backgroundImage = `url('${path}')`;
+            const img = new Image();
+            img.src = path;
         }
     });
 
@@ -158,6 +163,24 @@ function initStage1() {
     textElement.textContent = textSequence[0];
     textElement.style.opacity = 1;
 
+    function revealPhoto(layer) {
+        layer.style.pointerEvents = 'auto'; // Enable dragging once visible
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+        if (typeof gsap !== 'undefined') {
+            if (isMobile) {
+                gsap.to(layer, { opacity: 1, duration: 0.8, ease: 'power2.out' });
+            } else {
+                gsap.fromTo(layer,
+                    { opacity: 0, scale: 0.92 },
+                    { opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.2)', clearProps: 'scale' }
+                );
+            }
+        } else {
+            layer.style.opacity = 1;
+        }
+    }
+
     function nextStep() {
         if (currentStage !== 1 || isDragging) return;
 
@@ -165,26 +188,58 @@ function initStage1() {
         currentStep++;
 
         if (currentStep < textSequence.length) {
-            textElement.style.opacity = 0;
+            if (typeof gsap !== 'undefined') {
+                const tl = gsap.timeline();
 
-            setTimeout(() => {
-                textElement.textContent = textSequence[currentStep];
-                textElement.style.opacity = 1;
+                // Fade out current text with slight upward drift
+                tl.to(textElement, {
+                    opacity: 0,
+                    y: -10,
+                    duration: 0.4,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        textElement.textContent = textSequence[currentStep];
+                    }
+                });
 
+                // Fade in new text from below
+                tl.to(textElement, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+
+                // Reveal next photo
                 if (photoIndex < photoLayers.length) {
-                    photoLayers[photoIndex].style.opacity = 1;
+                    revealPhoto(photoLayers[photoIndex]);
                     photoIndex++;
                 }
 
                 if (currentStep >= textSequence.length - 1) {
-                    // All photos shown, show game invitation
-                    setTimeout(() => {
-                        showGameInvitation();
-                    }, 1500);
+                    tl.add(() => showGameInvitation(), '+=1.2');
                 } else if (currentStep === textSequence.length - 2) {
                     hintElement.textContent = "One more tap... ❤️";
                 }
-            }, 500);
+            } else {
+                // Fallback without GSAP
+                textElement.style.opacity = 0;
+                setTimeout(() => {
+                    textElement.textContent = textSequence[currentStep];
+                    textElement.style.opacity = 1;
+
+                    if (photoIndex < photoLayers.length) {
+                        revealPhoto(photoLayers[photoIndex]);
+                        photoIndex++;
+                    }
+
+                    if (currentStep >= textSequence.length - 1) {
+                        setTimeout(() => showGameInvitation(), 1500);
+                    } else if (currentStep === textSequence.length - 2) {
+                        hintElement.textContent = "One more tap... ❤️";
+                    }
+                }, 500);
+            }
         }
     }
 
@@ -373,7 +428,20 @@ function applyMomentum(element, index) {
 
 function showGameInvitation() {
     const popup = document.getElementById('game-transition');
+    const popupContent = popup.querySelector('.popup-content');
     popup.style.display = 'flex';
+
+    if (typeof gsap !== 'undefined') {
+        const tl = gsap.timeline();
+        tl.fromTo(popup, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' });
+        tl.fromTo(popupContent,
+            { y: -40, scale: 0.95, opacity: 0 },
+            { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.2)' },
+            '-=0.15'
+        );
+    } else {
+        popup.style.opacity = '1';
+    }
 
     document.getElementById('start-game-btn').addEventListener('click', () => {
         goToStage2();
@@ -398,7 +466,6 @@ function initStage2() {
     timelinePhotos.forEach((photo, index) => {
         const photoNum = TIMELINE_PHOTOS[index];
         photo.style.backgroundImage = `url('${getPhotoPath(photoNum)}')`;
-        console.log(`Timeline photo ${index + 1}: photo${photoNum}`);
     });
 
     // Store initial positions and randomize
@@ -418,6 +485,13 @@ function initStage2() {
 
     // Check answer button
     document.getElementById('check-order-btn').addEventListener('click', checkTimelineOrder);
+
+    updateCheckOrderVisibility();
+}
+
+function updateCheckOrderVisibility() {
+    const btn = document.getElementById('check-order-btn');
+    btn.style.display = Object.keys(photoPositions).length === 3 ? 'inline-block' : 'none';
 }
 
 function randomizePhotoPositions() {
@@ -466,6 +540,8 @@ function startTimelineDrag(e) {
             zone.classList.remove('filled');
         }
     });
+
+    updateCheckOrderVisibility();
 }
 
 function handleTimelineDragMove(e) {
@@ -483,8 +559,12 @@ function handleTimelineDragMove(e) {
     currentDragPhoto.style.right = 'auto';
     currentDragPhoto.style.bottom = 'auto';
 
-    // Highlight drop zones on hover
+    // Highlight drop zones on hover (skip filled zones)
     dropZones.forEach(zone => {
+        if (zone.classList.contains('filled')) {
+            zone.classList.remove('drag-over');
+            return;
+        }
         const zoneRect = zone.getBoundingClientRect();
         const photoRect = currentDragPhoto.getBoundingClientRect();
 
@@ -540,6 +620,8 @@ function endTimelineDrag(e) {
 
     currentDragPhoto.classList.remove('dragging');
     currentDragPhoto = null;
+
+    updateCheckOrderVisibility();
 }
 
 function resetTimelinePhotos() {
@@ -574,8 +656,8 @@ function checkTimelineOrder() {
     let isCorrect = true;
     for (let i = 1; i <= 3; i++) {
         const photoInZone = photoPositions[i];
-        const correctPhoto = CORRECT_ORDER[i - 1];
-        if (photoInZone != correctPhoto) {
+        const correctPhoto = String(CORRECT_ORDER[i - 1]);
+        if (photoInZone !== correctPhoto) {
             isCorrect = false;
             break;
         }
@@ -583,17 +665,18 @@ function checkTimelineOrder() {
 
     if (isCorrect) {
         showMessage('Perfecto! ❤️', 'success');
-        setTimeout(() => {
-            // Remove success message before transitioning
+        const delay = typeof gsap !== 'undefined' ? gsap.delayedCall.bind(gsap) : (t, fn) => setTimeout(fn, t * 1000);
+        delay(2, () => {
             const successMsg = document.querySelector('.game-message');
             if (successMsg) successMsg.remove();
             goToStage3();
-        }, 2000);
+        });
     } else {
         showMessage('Try again...', 'error');
-        setTimeout(() => {
+        const delay = typeof gsap !== 'undefined' ? gsap.delayedCall.bind(gsap) : (t, fn) => setTimeout(fn, t * 1000);
+        delay(1.5, () => {
             resetTimelinePhotos();
-        }, 1500);
+        });
     }
 }
 
@@ -608,22 +691,39 @@ function showMessage(text, type) {
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
-        background: ${type === 'success' ? 'rgba(46, 213, 115, 0.9)' : 'rgba(255, 107, 157, 0.9)'};
-        color: white;
+        transform: translate(-50%, -50%) scale(0.95);
+        background: ${type === 'success' ? 'rgba(134, 197, 161, 0.9)' : 'rgba(196, 130, 140, 0.9)'};
+        color: #f0e8ea;
         padding: 1.5rem 3rem;
         border-radius: 50px;
         font-size: 1.5rem;
         font-weight: 600;
         z-index: 1000;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        animation: messageSlide 0.3s ease;
+        opacity: 0;
     `;
 
     document.body.appendChild(message);
 
-    if (type === 'error') {
-        setTimeout(() => message.remove(), 2000);
+    if (typeof gsap !== 'undefined') {
+        gsap.to(message, {
+            opacity: 1, scale: 1,
+            duration: 0.35, ease: 'back.out(1.4)'
+        });
+
+        if (type === 'error') {
+            gsap.to(message, {
+                opacity: 0, y: -20,
+                duration: 0.3, delay: 1.7, ease: 'power2.in',
+                onComplete: () => message.remove()
+            });
+        }
+    } else {
+        message.style.opacity = '1';
+        message.style.transform = 'translate(-50%, -50%) scale(1)';
+        if (type === 'error') {
+            setTimeout(() => message.remove(), 2000);
+        }
     }
 }
 
@@ -715,7 +815,6 @@ function createPuzzlePieces() {
 
 function randomizePuzzlePieces() {
     const pieces = document.querySelectorAll('.puzzle-piece');
-    console.log('Randomizing puzzle pieces, found:', pieces.length);
 
     const pieceCount = PUZZLE_COLS * PUZZLE_ROWS;
 
@@ -745,7 +844,7 @@ function randomizePuzzlePieces() {
     // Shuffle positions so pieces don't appear in order
     positions.sort(() => Math.random() - 0.5);
 
-    // Spin in animation
+    // Set initial positions and animate with GSAP
     pieces.forEach((piece, index) => {
         const pos = positions[index];
 
@@ -755,23 +854,66 @@ function randomizePuzzlePieces() {
             top: pos.top
         };
 
-        console.log(`Piece ${index + 1} position:`, pos);
-
-        // Delay each piece slightly for staggered effect
-        setTimeout(() => {
-            piece.style.transition = 'all 1s ease-out';
-            piece.style.transform = 'rotate(0deg) scale(1)';
-            piece.style.opacity = '1';
-            piece.style.left = `${pos.left}px`;
-            piece.style.top = `${pos.top}px`;
-        }, index * 80); // 80ms delay between each piece for nice effect
+        // Set target position immediately (still invisible/spun)
+        piece.style.left = `${pos.left}px`;
+        piece.style.top = `${pos.top}px`;
     });
+
+    // Staggered spin-in
+    if (typeof gsap !== 'undefined') {
+        gsap.fromTo(pieces,
+            { rotation: 720, scale: 0, opacity: 0 },
+            { rotation: 0, scale: 1, opacity: 1, duration: 0.8, stagger: 0.06, ease: 'back.out(1.4)' }
+        );
+    } else {
+        pieces.forEach((piece, index) => {
+            setTimeout(() => {
+                piece.style.transition = 'all 1s ease-out';
+                piece.style.transform = 'rotate(0deg) scale(1)';
+                piece.style.opacity = '1';
+            }, index * 80);
+        });
+    }
 }
 
 function selectPiece(e) {
     e.stopPropagation();
 
     const piece = e.currentTarget;
+
+    // If piece is in a slot, remove it and return to original position
+    if (piece.classList.contains('in-slot')) {
+        const correctPos = piece.dataset.correctPosition;
+
+        // Remove from slot tracking
+        Object.keys(puzzlePlacements).forEach(pos => {
+            if (puzzlePlacements[pos] === correctPos) {
+                delete puzzlePlacements[pos];
+                const slot = document.querySelector(`.puzzle-slot[data-position="${pos}"]`);
+                slot.classList.remove('filled');
+            }
+        });
+
+        piece.classList.remove('in-slot');
+
+        // Return to original scattered position
+        const index = Array.from(document.querySelectorAll('.puzzle-piece')).indexOf(piece);
+        const originalPos = initialPuzzlePositions[index];
+        if (originalPos) {
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const pieceW = isMobile ? 160 : 240;
+            const pieceH = isMobile ? 90 : 135;
+            piece.style.transition = 'all 0.4s ease-out';
+            piece.style.left = `${originalPos.left}px`;
+            piece.style.top = `${originalPos.top}px`;
+            piece.style.width = `${pieceW}px`;
+            piece.style.height = `${pieceH}px`;
+            piece.style.backgroundSize = `${pieceW * PUZZLE_COLS}px ${pieceH * PUZZLE_ROWS}px`;
+        }
+
+        updateCheckButtonVisibility();
+        return;
+    }
 
     // If clicking an already selected piece, deselect it
     if (selectedPiece === piece) {
@@ -790,12 +932,9 @@ function selectPiece(e) {
     piece.classList.add('selected');
 
     // Visual feedback
-    piece.style.transform = 'scale(1.1)';
-    setTimeout(() => {
-        if (selectedPiece === piece) {
-            piece.style.transform = 'scale(1)';
-        }
-    }, 200);
+    if (typeof gsap !== 'undefined') {
+        gsap.fromTo(piece, { scale: 1.1 }, { scale: 1, duration: 0.2, ease: 'power2.out' });
+    }
 }
 
 function placeInSlot(e) {
@@ -874,6 +1013,13 @@ function resetPuzzle() {
         slot.classList.remove('filled');
     });
 
+    // Determine correct piece dimensions based on viewport
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const pieceW = isMobile ? 160 : 240;
+    const pieceH = isMobile ? 90 : 135;
+    const bgW = pieceW * PUZZLE_COLS;
+    const bgH = pieceH * PUZZLE_ROWS;
+
     // Return pieces to original positions
     pieces.forEach((piece, index) => {
         piece.classList.remove('in-slot', 'selected');
@@ -883,9 +1029,9 @@ function resetPuzzle() {
             piece.style.transition = 'all 0.5s ease-out';
             piece.style.left = `${originalPos.left}px`;
             piece.style.top = `${originalPos.top}px`;
-            piece.style.width = '240px';
-            piece.style.height = '135px';
-            piece.style.backgroundSize = '720px 405px';
+            piece.style.width = `${pieceW}px`;
+            piece.style.height = `${pieceH}px`;
+            piece.style.backgroundSize = `${bgW}px ${bgH}px`;
         }
     });
 
@@ -900,17 +1046,18 @@ function resetPuzzle() {
 }
 
 function checkPuzzle() {
+    const pieceCount = PUZZLE_COLS * PUZZLE_ROWS;
     // Check if all slots are filled
-    if (Object.keys(puzzlePlacements).length !== 9) {
+    if (Object.keys(puzzlePlacements).length !== pieceCount) {
         showMessage('Place all pieces in the grid first!', 'error');
         return;
     }
 
     // Check if all pieces are in correct positions
     let isCorrect = true;
-    for (let slotPos = 0; slotPos < 9; slotPos++) {
+    for (let slotPos = 0; slotPos < pieceCount; slotPos++) {
         const pieceInSlot = puzzlePlacements[slotPos];
-        if (pieceInSlot != slotPos) {
+        if (pieceInSlot !== String(slotPos)) {
             isCorrect = false;
             break;
         }
@@ -918,12 +1065,12 @@ function checkPuzzle() {
 
     if (isCorrect) {
         showMessage('Perfect! You solved the puzzle! 🧩', 'success');
-        setTimeout(() => {
-            // Remove success message
+        const delay = typeof gsap !== 'undefined' ? gsap.delayedCall.bind(gsap) : (t, fn) => setTimeout(fn, t * 1000);
+        delay(2, () => {
             const successMsg = document.querySelector('.game-message');
             if (successMsg) successMsg.remove();
             goToStage4();
-        }, 2000);
+        });
     } else {
         showMessage('Not quite right... keep trying! 💕', 'error');
     }
@@ -946,8 +1093,6 @@ function initStage4() {
         allPhotos.splice(randomIndex, 1); // Remove so we don't pick it again
     }
 
-    console.log('Selected random photos for victory swirl:', selectedPhotos);
-
     // Create 3 swirling photos
     selectedPhotos.forEach(photoNum => {
         const photo = document.createElement('div');
@@ -966,57 +1111,86 @@ function initStage4() {
 // ==========================================
 
 function goToStage2() {
-    // Fade out Stage 1
     const stage1 = document.getElementById('stage-1');
     const popup = document.getElementById('game-transition');
-
-    popup.style.opacity = '0';
-    setTimeout(() => popup.style.display = 'none', 500);
-
-    // Get the 3 photos that will be used in Stage 2
     const galleryPhotos = document.querySelectorAll('#stage-1 .photo-layer');
 
-    // Spin transition animation
-    galleryPhotos.forEach((photo, index) => {
-        photo.style.transition = 'all 1s ease-in-out';
-        photo.style.transform = `rotate(${360 * 2}deg) scale(0)`;
-        photo.style.opacity = '0';
-    });
-
-    setTimeout(() => {
+    function swapToStage2() {
+        popup.style.display = 'none';
         stage1.style.display = 'none';
         document.getElementById('stage-2').style.display = 'flex';
         currentStage = 2;
-
-        // Spin in timeline photos
-        const timelinePhotos = document.querySelectorAll('.photo-timeline');
-        timelinePhotos.forEach((photo, index) => {
-            photo.style.transform = `rotate(${360 * 2}deg) scale(0)`;
-            photo.style.opacity = '0';
-
-            setTimeout(() => {
-                photo.style.transition = 'all 1s ease-out';
-                photo.style.transform = 'rotate(0deg) scale(1)';
-                photo.style.opacity = '1';
-            }, 50);
-        });
-
         initStage2();
-    }, 1000);
+    }
+
+    if (typeof gsap !== 'undefined') {
+        const tl = gsap.timeline();
+
+        tl.to(popup, { opacity: 0, duration: 0.4, ease: 'power2.in' });
+        tl.to(galleryPhotos, {
+            rotation: 720, scale: 0, opacity: 0,
+            duration: 0.8, stagger: 0.08, ease: 'power2.in'
+        }, '-=0.2');
+
+        tl.add(() => {
+            swapToStage2();
+            const timelinePhotos = document.querySelectorAll('.photo-timeline');
+            gsap.fromTo(timelinePhotos,
+                { rotation: 720, scale: 0, opacity: 0 },
+                { rotation: 0, scale: 1, opacity: 1, duration: 0.9, stagger: 0.1, ease: 'back.out(1.2)' }
+            );
+        });
+    } else {
+        swapToStage2();
+    }
 }
 
 function goToStage3() {
-    document.getElementById('stage-2').style.display = 'none';
-    document.getElementById('stage-3').style.display = 'flex';
-    currentStage = 3;
-    initStage3();
+    const stage2 = document.getElementById('stage-2');
+    const stage3 = document.getElementById('stage-3');
+
+    function swapToStage3() {
+        stage2.style.display = 'none';
+        stage2.style.opacity = '1';
+        stage3.style.display = 'flex';
+        currentStage = 3;
+        initStage3();
+    }
+
+    if (typeof gsap !== 'undefined') {
+        const tl = gsap.timeline();
+        tl.to(stage2, {
+            opacity: 0, duration: 0.5, ease: 'power2.in',
+            onComplete: swapToStage3
+        });
+    } else {
+        swapToStage3();
+    }
 }
 
 function goToStage4() {
-    document.getElementById('stage-3').style.display = 'none';
-    document.getElementById('stage-4').style.display = 'flex';
-    currentStage = 4;
-    initStage4();
+    const stage3 = document.getElementById('stage-3');
+    const stage4 = document.getElementById('stage-4');
+
+    function swapToStage4() {
+        stage3.style.display = 'none';
+        stage3.style.opacity = '1';
+        stage4.style.display = 'flex';
+        currentStage = 4;
+        initStage4();
+    }
+
+    if (typeof gsap !== 'undefined') {
+        const tl = gsap.timeline();
+        tl.to(stage3, {
+            opacity: 0, duration: 0.5, ease: 'power2.in',
+            onComplete: swapToStage4
+        });
+        tl.from('.victory-text', { opacity: 0, y: 20, duration: 0.6, ease: 'power2.out' }, '+=0.1');
+        tl.from('.spotify-link', { opacity: 0, y: 20, duration: 0.6, ease: 'power2.out' }, '-=0.3');
+    } else {
+        swapToStage4();
+    }
 }
 
 // ==========================================
@@ -1071,25 +1245,9 @@ try {
 
 document.body.addEventListener('click', startAudio, { once: true });
 
-// Preload images
-window.addEventListener('load', () => {
-    const allPhotos = document.querySelectorAll('[style*="background-image"]');
-    allPhotos.forEach(element => {
-        const bgImage = window.getComputedStyle(element).backgroundImage;
-        const url = bgImage.slice(4, -1).replace(/"/g, "");
-        if (url && url !== 'none') {
-            const img = new Image();
-            img.src = url;
-        }
-    });
-});
-
 // ==========================================
 // 9. INITIALIZE
 // ==========================================
-
-console.log('Valentine\'s Day 4-Stage Game loaded ❤️');
-console.log('Stage 1: Photo Gallery → Stage 2: Timeline → Stage 3: Puzzle → Stage 4: Victory');
 
 // Initialize Stage 1 on load
 initStage1();
